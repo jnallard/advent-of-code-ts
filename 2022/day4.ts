@@ -1,5 +1,5 @@
 import { isBetween } from "../helpers";
-import { INPUT } from "./input/day4-input";
+import { INPUT } from "./input/input-day4";
 
 let fullyContainedPairs = 0;
 let overlappedPairs = 0;

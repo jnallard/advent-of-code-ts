@@ -1,5 +1,5 @@
 import { intersect, sum } from "../helpers";
-import { INPUT } from "./input/day3-input";
+import { INPUT } from "./input/input-day3";
 
 
 function getPriority(itemType: string) {

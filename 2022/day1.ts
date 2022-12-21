@@ -1,5 +1,5 @@
 import { sum } from "../helpers";
-import { INPUT } from "./input/day1-input"; './input/day1-input';
+import { INPUT } from "./input/input-day1";
 
 class Elf {
     static topElf: Elf;

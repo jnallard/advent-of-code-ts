@@ -1,5 +1,5 @@
 import { sum } from "../helpers";
-import { INPUT } from "./input/day2-input";
+import { INPUT } from "./input/input-day2";
 
 abstract class BaseRound {
     inputA: string;

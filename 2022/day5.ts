@@ -1,4 +1,4 @@
-import { INPUT_STACKS, INPUT_MOVES } from "./input/day5-input";
+import { INPUT_STACKS, INPUT_MOVES } from "./input/input-day5";
 
 class ShippingYard {
     private stacks: Stack[] = [];

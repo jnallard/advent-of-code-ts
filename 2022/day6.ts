@@ -1,4 +1,4 @@
-import { INPUT } from "./input/day6-input";
+import { INPUT } from "./input/input-day6";
 
 function getCharArray(signal: string, index: number, count: number) {
     return [...signal].slice(index - count, index);
