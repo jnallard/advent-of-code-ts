@@ -163,25 +163,20 @@ class Range {
 class Mapper {
     ranges: Range[];
     previousMapper: Mapper | null = null;
-    // knownValues: Record<number, number> = {};
+
     constructor(rawInput: string, public nextMapper: Mapper | null) {
         const lines = rawInput.split('\n').filter(l => !!l);
         this.ranges = lines.map(l => new Range(l));
     } 
 
     map(value: number): number {
-        // if (this.knownValues[value]) {
-        //     return this.knownValues[value];
-        // }
         const range = this.ranges.find(r => r.isInRange(value));
         const transformedValue = range ? range.transform(value) : value;
         const newValue = this.nextMapper ? this.nextMapper.map(transformedValue) : transformedValue;
-        // this.knownValues[value] = newValue;
         return newValue;
     }
 
     revert(value: number): number {
-        // console.log(value);
         const range = this.ranges.find(r => r.isInTargetRange(value));
         const transformedValue = range ? range.revert(value) : value;
         const newValue = this.previousMapper ? this.previousMapper.revert(transformedValue) : transformedValue;

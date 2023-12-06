@@ -43,13 +43,11 @@ const CardRegex = /Card\s+(?<cardNumber>\d+): (?<winnngNumbers>[\d\s]+) \| (?<my
 let copies: Record<number, number> = {};
 
 const updateCopies = (cardNumber: number, winCount: number) => {
-    // console.log(cardNumber, winCount);
     for(let i = cardNumber + 1; i <= cardNumber + winCount; i++) {
         if(!copies[i]) {
             copies[i] = 0;
         }
         copies[i] = copies[i] + 1;
-        // console.log(i);
     }
 }
 

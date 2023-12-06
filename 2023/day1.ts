@@ -54,7 +54,6 @@ class CalibrationLineV1 {
         const firstDigit = convertedLine[0];
         const secondDigit = convertedLine[convertedLine.length - 1];
         this.calibrationValue = +`${firstDigit}${secondDigit}`;
-        // console.log(input, convertedLine, firstDigit, secondDigit, this.calibrationValue);
     }
 }
 
@@ -83,12 +82,9 @@ const CalibrationValues = {
 class CalibrationLineV2 {
     readonly calibrationValue: number;
     constructor(public input: string) {
-        // console.log('======================');
-        // console.log(input);
         const firstDigit = this.findFirstValue();
         const secondDigit = this.findLastValue();
         this.calibrationValue = +`${firstDigit}${secondDigit}`;
-        // console.log(firstDigit, secondDigit, this.calibrationValue);
     }
 
     findFirstValue() {
@@ -96,7 +92,6 @@ class CalibrationLineV2 {
             for(let [key, value] of Object.entries(CalibrationValues)) {
                 const substring = this.input.substring(i, i + key.length);
                 if(substring === key) {
-                    // console.log(i, key, value, substring);
                     return value;
                 } 
             }
@@ -109,7 +104,6 @@ class CalibrationLineV2 {
             for(let [key, value] of Object.entries(CalibrationValues)) {
                 const substring = this.input.substring(i - key.length, i);
                 if(substring === key) {
-                    // console.log(i, key, value, substring);
                     return value;
                 } 
             }
