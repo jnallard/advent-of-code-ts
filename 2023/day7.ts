@@ -157,8 +157,14 @@ class HandPart1 {
         } else { // high card
             handStrength = HighCard; 
         }
-        // h0,102,030,405
-        const sortingValue = (handStrength * 10000000000) + (cardValues[this.cards[0]] * 100000000) + (cardValues[this.cards[1]] * 1000000) + (cardValues[this.cards[2]] * 10000) + (cardValues[this.cards[3]] * 100) + cardValues[this.cards[4]];
+        // h1,122,334,455
+        const sortingValue = 
+            (handStrength * 10000000000)
+            + (cardValues[this.cards[0]] * 100000000) 
+            + (cardValues[this.cards[1]] * 1000000) 
+            + (cardValues[this.cards[2]] * 10000) 
+            + (cardValues[this.cards[3]] * 100) 
+            + cardValues[this.cards[4]];
         return sortingValue;
     }
 }
