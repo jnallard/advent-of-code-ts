@@ -78,7 +78,7 @@ import { INPUT } from "./input/input-day1";
 
 const lineRegex = /(?<list1>\d+)   (?<list2>\d+)/
 
-function setup() {
+function sharedSetup() {
     const lines = INPUT.split('\n').filter(l => !!l);
     const entries = lines.map(l => lineRegex.exec(l)).map(e => ({list1: +(e?.groups?.list1 ?? '0'), list2: +(e?.groups?.list2 ?? 0)}));
     const list1 = entries.map(e => e.list1).sort();
@@ -87,7 +87,7 @@ function setup() {
 }
 
 execPart1(() => {
-    const {list1, list2} = setup();
+    const {list1, list2} = sharedSetup();
     let sumSoFar = 0;
     for(let i = 0; i < list1.length; i++) {
         sumSoFar += Math.abs(list1[i] - list2[i]);
@@ -96,7 +96,7 @@ execPart1(() => {
 })
 
 execPart2(() => {
-    const {list1, list2} = setup();
+    const {list1, list2} = sharedSetup();
     const list2Counts: Record<number, number> = {};
     list2.forEach(num => list2Counts[num] = (list2Counts[num] ?? 0) + 1);
     const counts = list1.map(num => num * (list2Counts[num] ?? 0));
