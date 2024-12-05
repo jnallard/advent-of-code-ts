@@ -13,6 +13,14 @@ export const execPart = (func: () => string | number, partName: string) => {
   console.log(`==================`);
 }
 
+export const execExamplePart1 = (func: () => string | number) => {
+  execPart(func, 'Example - Part 1');
+}
+
+export const execExamplePart2 = (func: () => string | number) => {
+  execPart(func, 'Example - Part 2');
+}
+
 export const execPart1 = (func: () => string | number) => {
   execPart(func, 'Part 1');
 }
