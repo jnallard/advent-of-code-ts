@@ -1,0 +1,32 @@
+{
+  "ts-node": {
+    // these options are overrides used only by ts-node
+    // same as the --compilerOptions flag and the TS_NODE_COMPILER_OPTIONS environment variable
+    "compilerOptions": {
+      "module": "commonjs"
+    }
+  },
+  "compilerOptions": {
+    "skipLibCheck": true,
+    "allowSyntheticDefaultImports": true,
+    "noFallthroughCasesInSwitch": true,
+    "resolveJsonModule": true,
+    "isolatedModules": true,
+    "noEmit": false,
+    "forceConsistentCasingInFileNames": true,
+    "strict": true,
+    "removeComments": true,
+    "allowJs": true,
+    "checkJs": true,
+
+    "module": "esnext",
+    "esModuleInterop": true,
+    "target": "ESNext",
+    "moduleResolution": "node",
+    "sourceMap": true,
+    "outDir": "./bin",
+    "rootDir": "src"
+  },
+  "include": ["src/*.ts", "src/*", "src/**/*", ".env"],
+  "exclude": ["src/views"]
+}
