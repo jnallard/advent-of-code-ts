@@ -6,10 +6,20 @@
 import { execPart1, execPart2 } from "../helpers";
 import { INPUT } from "./input/INPUT_TEMPLATE";
 
-function sharedSetup() {
-    const lines = INPUT.split('\n').filter(l => !!l);
+function sharedSetup(input: string = INPUT) {
+    const lines = input.split('\n').filter(l => !!l);
     return {lines};
 }
+
+// execExamplePart1(() => {
+//     const {lines} = sharedSetup(SAMPLE_INPUT);
+//     return 'TBD';
+// })
+
+// execExamplePart2(() => {
+//     const {lines} = sharedSetup(SAMPLE_INPUT);
+//     return 'TBD';
+// })
 
 execPart1(() => {
     const {lines} = sharedSetup();
