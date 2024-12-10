@@ -5,9 +5,23 @@ export type Coordinate<T = string> = {
   value: T;
 }
 
-export type CoordinatePair = {
-  c1: Coordinate,
-  c2: Coordinate,
+export type CoordinatePair<T = string> = {
+  c1: Coordinate<T>,
+  c2: Coordinate<T>,
+}
+
+export function getAllPairs(coords: Coordinate[])
+{
+    const n = coords.length;
+    const pairs: CoordinatePair[] = [];
+    for (var i = 0; i < n; i++) {
+        for (var j = 0; j < n; j++) {
+            if (i !== j) {
+                pairs.push({c1: coords[i], c2: coords[j]})
+            }
+        }
+    }
+    return pairs;
 }
 
 export function getCoordStringRaw(row: number, col: number) {
@@ -60,10 +74,11 @@ export class Grid<T extends string | number = string> {
     const neighbors = [n, e, s, w, ...(allowDiagonals ? [ne, se, sw, nw] : [])];
     return neighbors.filter(c => (c !== undefined && valueToMatch) ? c.value === valueToMatch : c !== undefined);
   }
-}
-
-export type GridDetails = {
-  coords: Coordinate[];
-  rows: number;
-  cols: number;
+  
+  isOnMap(coord: Coordinate) {
+    if (coord === undefined) {
+      return false;
+    }
+    return (coord.row >= 0 && coord.row < this.rowCount) && (coord.col >= 0 && coord.col < this.colCount);
+  }
 }

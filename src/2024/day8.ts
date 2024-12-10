@@ -117,138 +117,96 @@ Your puzzle answer was 1184.
 */
 
 
+import { Coordinate, CoordinatePair, getAllPairs, Grid } from "../grid-helpers";
 import { execExamplePart1, execExamplePart2, execPart1, execPart2 } from "../helpers";
 import { INPUT, SAMPLE_INPUT } from "./input/input-day8";
 
-type Coordinate = {
-    row: number;
-    col: number;
-}
-
-type CoordPair = {
-    c1: Coordinate,
-    c2: Coordinate,
-}
-
-type GridDetails = {
-    rows: number;
-    cols: number;
-}
-
 type AntinodeMap = Record<string, Coordinate[]>;
 
-function getCoordName(coord: Coordinate) {
-    return `${coord.row}-${coord.col}`;
-}
-
-function isOnMap(coord: Coordinate, gridDetails: GridDetails) {
-    return (coord.row >= 0 && coord.row < gridDetails.rows) && (coord.col >= 0 && coord.col < gridDetails.cols);
-}
-
 function sharedSetup(input: string = INPUT) {
-    const lines = input.split('\n').filter(l => !!l);
+    const grid = new Grid(input.split('\n').filter(l => !!l));
     const frequencyPositions: AntinodeMap = {};
-    for(let [rowIndex, row] of lines.entries()) {
-        for (let [colIndex, cell] of row.split('').entries()) {
-            if (cell !== '.') {
-                frequencyPositions[cell] = [...(frequencyPositions[cell] ?? []), {row: rowIndex, col: colIndex}];
-            }
+    for(let coord of grid.coords) {
+        if (coord.value !== '.') {
+            frequencyPositions[coord.value] = [...(frequencyPositions[coord.value] ?? []), coord];
         }
     }
-    const gridDetails: GridDetails = {
-        rows: lines.length,
-        cols: lines[0].length,
-    }
-    return {frequencyPositions, gridDetails};
+    return {frequencyPositions, grid};
 }
 
-function findAntinodesForTwoCells({c1, c2}: CoordPair): Coordinate[] {
+function findAntinodesForTwoCells({c1, c2}: CoordinatePair, grid: Grid): Coordinate[] {
     const rowDiff = c2.row - c1.row;
     const colDiff = c2.col - c1.col;
-    return [{row: c2.row + rowDiff, col: c2.col + colDiff}, {row: c1.row - rowDiff, col: c1.col - colDiff}];
+    return [grid.getCoord(c2.row + rowDiff, c2.col + colDiff), grid.getCoord(c1.row - rowDiff, c1.col - colDiff)];
 }
 
 function round(num: number) {
     return Math.round((num + Number.EPSILON) * 10000) / 10000;
 }
 
-function findAntinodesForTwoCellsPart2({c1, c2}: CoordPair, gridDetails: GridDetails): Coordinate[] {
+function findAntinodesForTwoCellsPart2({c1, c2}: CoordinatePair, grid: Grid): Coordinate[] {
     const yRowDiff = c2.row - c1.row;
     const xColDiff = c2.col - c1.col;
     const m = yRowDiff/xColDiff;
     const b = c1.row - (m * c1.col);
     const points: Coordinate[] = [];
     let newPoint: Coordinate = c1;
-    for(let i = 0; i < gridDetails.cols; i++) {
+    for(let i = 0; i < grid.colCount; i++) {
         const x = i;
         const y = round((m * x) + b);
-        newPoint = {row: y, col: x}
-        if(y % 1 === 0 && isOnMap(newPoint, gridDetails)) {
+        newPoint = grid.getCoord(y, x);
+        if(y % 1 === 0 && !!newPoint) {
             points.push(newPoint);
         }
     }
     return points;
 }
 
-function getAllPairs(coords: Coordinate[])
-{
-    const n = coords.length;
-    const pairs: CoordPair[] = [];
-    for (var i = 0; i < n; i++) {
-        for (var j = 0; j < n; j++) {
-            if (i !== j) {
-                pairs.push({c1: coords[i], c2: coords[j]})
-            }
-        }
-    }
-    return pairs;
-}
-
-function findAntinodesForFrequency(coords: Coordinate[]) {
+function findAntinodesForFrequency(coords: Coordinate[], grid: Grid) {
     const allPairs = getAllPairs(coords);
-    return allPairs.map(findAntinodesForTwoCells).flat();
+    return allPairs.map(pair => findAntinodesForTwoCells(pair, grid)).flat();
 }
 
-function findAntinodesForFrequencyPart2(coords: Coordinate[], gridDetails: GridDetails) {
+function findAntinodesForFrequencyPart2(coords: Coordinate[], grid: Grid) {
     const allPairs = getAllPairs(coords);
-    return allPairs.map(a => findAntinodesForTwoCellsPart2(a, gridDetails)).flat();
+    return allPairs.map(a => findAntinodesForTwoCellsPart2(a, grid)).flat();
 }
 
-function findAllAntinodes(map: AntinodeMap, gridDetails: GridDetails) {
+function findAllAntinodes(map: AntinodeMap, grid: Grid) {
     const antinodes = Object.values(map).
-        map(coords => findAntinodesForFrequency(coords))
+        map(coords => findAntinodesForFrequency(coords, grid))
         .flat()
-        .filter(c => isOnMap(c, gridDetails));
-    const set = new Set<string>(antinodes.map(getCoordName));
+        .filter(c => grid.isOnMap(c));
+    const set = new Set<string>(antinodes.map(a => a.id));
     return set.size;
 }
 
-function findAllAntinodesPart2(map: AntinodeMap, gridDetails: GridDetails) {
+function findAllAntinodesPart2(map: AntinodeMap, grid: Grid) {
     const antinodes = Object.values(map)
-        .map(coords => findAntinodesForFrequencyPart2(coords, gridDetails))
+        .map(coords => findAntinodesForFrequencyPart2(coords, grid))
         .flat()
-        .filter(c => isOnMap(c, gridDetails));
-    const set = new Set<string>(antinodes.map(getCoordName));
+        .filter(c => grid.isOnMap(c));
+    const set = new Set<string>(antinodes.map(a => a.id));
     return set.size;
 }
 
 execExamplePart1(() => {
-    const {frequencyPositions, gridDetails} = sharedSetup(SAMPLE_INPUT);
-    return findAllAntinodes(frequencyPositions, gridDetails);
+    const {frequencyPositions, grid} = sharedSetup(SAMPLE_INPUT);
+    return findAllAntinodes(frequencyPositions, grid);
 })
 
 execExamplePart2(() => {
-    const {frequencyPositions, gridDetails} = sharedSetup(SAMPLE_INPUT);
-    return findAllAntinodesPart2(frequencyPositions, gridDetails);
+    const {frequencyPositions, grid} = sharedSetup(SAMPLE_INPUT);
+    return findAllAntinodesPart2(frequencyPositions, grid);
 })
 
 execPart1(() => {
-    const {frequencyPositions, gridDetails} = sharedSetup();
-    return findAllAntinodes(frequencyPositions, gridDetails);
+    const {frequencyPositions, grid} = sharedSetup();
+    return findAllAntinodes(frequencyPositions, grid);
 })
 
 execPart2(() => {
-    const {frequencyPositions, gridDetails} = sharedSetup();
-    return findAllAntinodesPart2(frequencyPositions, gridDetails);
+    const {frequencyPositions, grid} = sharedSetup();
+    return findAllAntinodesPart2(frequencyPositions, grid);
 })
 
