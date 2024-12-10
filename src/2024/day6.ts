@@ -182,7 +182,7 @@ Your puzzle answer was 1503.
 */
 
 
-import { execExamplePart1, execExamplePart2, execPart1, execPart2 } from "../helpers";
+import { execExamplePart1, execExamplePart2Async, execPart1, execPart2Async, sum } from "../helpers";
 import { INPUT, SAMPLE_INPUT } from "./input/input-day6";
 
 class Grid {
@@ -193,13 +193,13 @@ class Grid {
     readonly visited: Record<string, Pose> = {};
     readonly visitedPoses: Record<string, Pose> = {};
 
-    constructor(private lines: string[]) {
+    constructor(private lines: string[], startPose?: Pose, private overrideObstacle?: Coordinate) {
         this.rowCount = lines.length;
         this.colCount = lines[0].length;
-        this.startingPose = this.findGuard();
+        this.startingPose = (startPose ?? this.findGuard()).clone();
         this.guardPose = this.startingPose;
-        this.visited[this.startingPose.getCoordString()] = this.startingPose;
-        this.visitedPoses[this.startingPose.getPoseString()] = this.startingPose;
+        this.visited[this.startingPose.coordId] = this.startingPose;
+        this.visitedPoses[this.startingPose.poseId] = this.startingPose;
     }
 
     findGuard(): Pose {
@@ -213,6 +213,13 @@ class Grid {
         return pose;
     }
 
+    getCell(row: number, col: number) {
+        if(this.overrideObstacle && this.overrideObstacle.row === row && this.overrideObstacle.col === col) {
+            return '#';
+        }
+        return this.lines[row]?.[col];
+    }
+
     getNextPoseInDirection(currentPose: Pose) {
         let currentDirection = directions[currentPose.direction];
         const nextPose = new Pose(
@@ -220,7 +227,7 @@ class Grid {
             currentPose.col + currentDirection.defaultChange.col,
             currentPose.direction,
         )
-        if (this.lines[nextPose.row]?.[nextPose.col] === '#') {
+        if (this.getCell(nextPose.row, nextPose.col) === '#') {
             return undefined;
         }
         return nextPose;
@@ -231,10 +238,10 @@ class Grid {
     }
 
     isRepeatedPose() {
-        return this.visitedPoses[this.guardPose.getPoseString()] ?? false;
+        return this.visitedPoses[this.guardPose.poseId] ?? false;
     }
     
-    moveStep() {
+    moveStep() : {pose: Pose, isRepeated: boolean} {
         let nextPose = this.getNextPoseInDirection(this.guardPose);
         while(nextPose === undefined) {
             let currentDirection = directions[this.guardPose.direction];
@@ -243,13 +250,13 @@ class Grid {
         }
         this.guardPose = nextPose;
         if (this.isRepeatedPose()) {
-            throw 'repeated pose';
+            return {pose: nextPose, isRepeated: true};
         } 
         if (!this.isOffMap()) {
-            this.visited[nextPose.getCoordString()] = nextPose;
-            this.visitedPoses[nextPose.getPoseString()] = nextPose;
+            this.visited[nextPose.coordId] = nextPose;
+            this.visitedPoses[nextPose.poseId] = nextPose;
         }
-        return nextPose;
+        return {pose: nextPose, isRepeated: false};
     }
 
     countVisted() {
@@ -259,36 +266,26 @@ class Grid {
     run() {
         this.moveStep();
         while(!this.startingPose.isEqual(this.guardPose) && !this.isOffMap()) {
-            this.moveStep();
+            const response = this.moveStep();
+            if(response.isRepeated) {
+                return 0;
+            }
         }
         return this.countVisted();
     }
 
     private cloneGridWithObstacleAdded(row: number, col: number) {
-        const clonedLines = [...this.lines].map(row => row.slice());
-        const newLine = clonedLines[row].split('');
-        newLine.splice(col, 1, '#');
-        clonedLines[row] = newLine.join('');
-        return new Grid(clonedLines);
+        return new Grid(this.lines, this.startingPose, {row, col});
     }
 
-    getAllNewGridsWithObstacles() {
+    async getAllNewGridsWithObstacles() {
         this.run();
         let allGrids: Grid[] = [];
         const allVisited = Object.values(this.visited);
         for (let visitedPose of allVisited) {
             allGrids.push(this.cloneGridWithObstacleAdded(visitedPose.row, visitedPose.col));
         }
-        let count = 0;
-        for(let newGrid of allGrids) {
-            try {
-                newGrid.run();
-            }
-            catch {
-                count++;
-            }
-        }
-        return count;
+        return sum(await Promise.all(allGrids.map(async g => g.run() > 0 ? 0 as number : 1 as number)));
     }
 }
 
@@ -298,21 +295,36 @@ type Coordinate = {
 }
 
 class Pose implements Coordinate {
+    coordId: string;
+    poseId: string;
 
-    constructor(public row: number, public col: number, public direction: DirectionChar) {
+    constructor(public row: number, public col: number, private _direction: DirectionChar) {
+        this.coordId = this.getCoordString();
+        this.poseId = this.getPoseString();
+    }
 
+    get direction() {
+        return this._direction;
+    }
+    set direction(value: DirectionChar) {
+        this._direction = value;
+        this.poseId = this.getPoseString();
     }
 
     isEqual(otherPose: Pose) {
-        return this.row === otherPose.row && this.col === otherPose.col && this.direction === otherPose.direction; 
+        return this.row === otherPose.row && this.col === otherPose.col && this._direction === otherPose._direction; 
     }
 
-    getCoordString() {
+    private getCoordString() {
         return `${this.row}-${this.col}`;
     }
 
-    getPoseString() {
-        return `${this.row}-${this.col}-${this.direction}`;
+    private getPoseString() {
+        return `${this.row}-${this.col}-${this._direction}`;
+    }
+
+    clone() {
+        return new Pose(this.row, this.col, this._direction);
     }
 }
 
@@ -341,12 +353,12 @@ execPart1(() => {
     return grid.run();
 })
 
-execExamplePart2(() => {
+execExamplePart2Async(() => {
     const {grid} = sharedSetup(SAMPLE_INPUT);
     return grid.getAllNewGridsWithObstacles();
 })
 
-execPart2(() => {
+execPart2Async(() => {
     const {grid} = sharedSetup();
     return grid.getAllNewGridsWithObstacles();
 })
