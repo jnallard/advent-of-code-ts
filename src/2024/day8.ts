@@ -118,7 +118,7 @@ Your puzzle answer was 1184.
 
 
 import { Coordinate, CoordinatePair, getAllPairs, Grid } from "../grid-helpers";
-import { execExamplePart1, execExamplePart2, execPart1, execPart2 } from "../helpers";
+import { execExamplePart1, execExamplePart2, execPart1, execPart2, round } from "../helpers";
 import { INPUT, SAMPLE_INPUT } from "./input/input-day8";
 
 type AntinodeMap = Record<string, Coordinate[]>;
@@ -138,10 +138,6 @@ function findAntinodesForTwoCells({c1, c2}: CoordinatePair, grid: Grid): Coordin
     const rowDiff = c2.row - c1.row;
     const colDiff = c2.col - c1.col;
     return [grid.getCoord(c2.row + rowDiff, c2.col + colDiff), grid.getCoord(c1.row - rowDiff, c1.col - colDiff)];
-}
-
-function round(num: number) {
-    return Math.round((num + Number.EPSILON) * 10000) / 10000;
 }
 
 function findAntinodesForTwoCellsPart2({c1, c2}: CoordinatePair, grid: Grid): Coordinate[] {

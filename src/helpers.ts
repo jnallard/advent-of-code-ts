@@ -4,6 +4,10 @@ export function intersect<T>(...sets: Set<T>[]) { return sets.reduce((a, b) => n
 
 export const isBetween = (value: number, min: number, max: number, inclusive: boolean) => inclusive ? value >= min && value <= max : value > min && value < max;
 
+export function round(num: number) {
+  return Math.round((num + Number.EPSILON) * 1000000) / 1000000;
+}
+
 type FuncParam = () => string | number;
 export const execPart = (func: FuncParam, partName: string) => {
   console.log(`Starting ${partName}...`);

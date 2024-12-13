@@ -87,7 +87,7 @@ export class Grid<T extends string | number = string> {
     }
   }
 
-  getCoord(row: number, col: number, allowFakeCoord: boolean = false) : Coordinate<T> | undefined {
+  getCoord(row: number, col: number, allowFakeCoord: boolean = false) : Coordinate<T> {
     return this.coordsById[getCoordStringRaw(row, col)] ?? (allowFakeCoord ? {col, row, id: getCoordStringRaw(row, col), value: '' as T, isFake: true}: undefined);
   }
 
