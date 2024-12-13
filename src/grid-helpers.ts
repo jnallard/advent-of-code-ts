@@ -3,7 +3,42 @@ export type Coordinate<T = string> = {
   row: number;
   col: number;
   value: T;
+  isFake?: boolean;
 }
+
+export type CoordinateTransponse = {
+  row: number;
+  col: number;
+}
+
+export function getTranspose<T>(coordA: Coordinate<T>, coordB: Coordinate<T>): CoordinateTransponse {
+  return {row: coordB.row - coordA.row, col: coordB.col - coordA.col};
+}
+
+export function areTransposesEquivalent(t1: CoordinateTransponse, t2: CoordinateTransponse) {
+  return t1.row === t2.row && t1.col === t2.col;
+}
+
+export function getTransposeString(t: CoordinateTransponse) {
+  return `tr${t.row}-tc${t.col}`;
+}
+
+export const N: CoordinateTransponse = {row: 1, col: 0};
+export const E: CoordinateTransponse = {row: 0, col: 1};
+export const S: CoordinateTransponse = {row: -1, col: 0};
+export const W: CoordinateTransponse = {row: 0, col: -1};
+export const NE: CoordinateTransponse = {row: 1, col: 1};
+export const SE: CoordinateTransponse = {row: -1, col: 1};
+export const SW: CoordinateTransponse = {row: -1, col: -1};
+export const NW: CoordinateTransponse = {row: 1, col: -1};
+
+export const Directions = [
+  N, E, S, W,
+]
+
+export const DirectionsWithDiagonals = [
+  N, E, S, W, NE, SE, SW, NW
+]
 
 export type CoordinatePair<T = string> = {
   c1: Coordinate<T>,
@@ -53,7 +88,7 @@ export class Grid<T extends string | number = string> {
   }
 
   getCoord(row: number, col: number, allowFakeCoord: boolean = false) : Coordinate<T> | undefined {
-    return this.coordsById[getCoordStringRaw(row, col)] ?? (allowFakeCoord ? {col, row, id: getCoordStringRaw(row, col), value: '' as T}: undefined);
+    return this.coordsById[getCoordStringRaw(row, col)] ?? (allowFakeCoord ? {col, row, id: getCoordStringRaw(row, col), value: '' as T, isFake: true}: undefined);
   }
 
   getCoordsByValue(value: T) {
@@ -63,16 +98,11 @@ export class Grid<T extends string | number = string> {
   getNeighbors(coord: Coordinate<T>, allowDiagonals: boolean, valueToMatch?: T, allowFakeCoords: boolean = false): Coordinate<T>[] {
     const row = coord.row;
     const col = coord.col;
-    const n = this.getCoord(row + 1, col, allowFakeCoords);
-    const ne = this.getCoord(row + 1, col + 1, allowFakeCoords);
-    const e = this.getCoord(row, col + 1, allowFakeCoords);
-    const se = this.getCoord(row - 1, col + 1, allowFakeCoords);
-    const s = this.getCoord(row - 1, col, allowFakeCoords);
-    const sw = this.getCoord(row - 1, col - 1, allowFakeCoords);
-    const w = this.getCoord(row, col - 1, allowFakeCoords);
-    const nw = this.getCoord(row + 1, col - 1, allowFakeCoords);
-    const neighbors = [n, e, s, w, ...(allowDiagonals ? [ne, se, sw, nw] : [])];
-    return neighbors.filter(c => c != undefined).filter(c => (c !== undefined && valueToMatch) ? c.value === valueToMatch : c !== undefined);
+    const neighbors = ((allowDiagonals) ? DirectionsWithDiagonals : Directions).map(ct => this.getCoord(row + ct.row, col + ct.col, allowFakeCoords)).filter(c => c !== undefined);
+    if (valueToMatch !== undefined) {
+      return neighbors.filter(c => c.value === valueToMatch)
+    }
+    return neighbors;
   }
   
   isOnMap(coord: Coordinate) {
