@@ -52,27 +52,27 @@ export class Grid<T extends string | number = string> {
     }
   }
 
-  getCoord(row: number, col: number) {
-    return this.coordsById[getCoordStringRaw(row, col)] ?? undefined;
+  getCoord(row: number, col: number, allowFakeCoord: boolean = false) : Coordinate<T> | undefined {
+    return this.coordsById[getCoordStringRaw(row, col)] ?? (allowFakeCoord ? {col, row, id: getCoordStringRaw(row, col), value: '' as T}: undefined);
   }
 
   getCoordsByValue(value: T) {
     return this.coordsByValue[value];
   }
 
-  getNeighbors(coord: Coordinate<T>, allowDiagonals: boolean, valueToMatch?: T) {
+  getNeighbors(coord: Coordinate<T>, allowDiagonals: boolean, valueToMatch?: T, allowFakeCoords: boolean = false): Coordinate<T>[] {
     const row = coord.row;
     const col = coord.col;
-    const n = this.getCoord(row + 1, col);
-    const ne = this.getCoord(row + 1, col + 1);
-    const e = this.getCoord(row, col + 1);
-    const se = this.getCoord(row - 1, col + 1);
-    const s = this.getCoord(row - 1, col);
-    const sw = this.getCoord(row - 1, col - 1);
-    const w = this.getCoord(row, col - 1);
-    const nw = this.getCoord(row + 1, col - 1);
+    const n = this.getCoord(row + 1, col, allowFakeCoords);
+    const ne = this.getCoord(row + 1, col + 1, allowFakeCoords);
+    const e = this.getCoord(row, col + 1, allowFakeCoords);
+    const se = this.getCoord(row - 1, col + 1, allowFakeCoords);
+    const s = this.getCoord(row - 1, col, allowFakeCoords);
+    const sw = this.getCoord(row - 1, col - 1, allowFakeCoords);
+    const w = this.getCoord(row, col - 1, allowFakeCoords);
+    const nw = this.getCoord(row + 1, col - 1, allowFakeCoords);
     const neighbors = [n, e, s, w, ...(allowDiagonals ? [ne, se, sw, nw] : [])];
-    return neighbors.filter(c => (c !== undefined && valueToMatch) ? c.value === valueToMatch : c !== undefined);
+    return neighbors.filter(c => c != undefined).filter(c => (c !== undefined && valueToMatch) ? c.value === valueToMatch : c !== undefined);
   }
   
   isOnMap(coord: Coordinate) {
