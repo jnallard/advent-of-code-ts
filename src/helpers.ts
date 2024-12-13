@@ -9,8 +9,9 @@ export function round(num: number) {
 }
 
 type FuncParam = () => string | number;
-export const execPart = (func: FuncParam, partName: string) => {
-  console.log(`Starting ${partName}...`);
+export const execPart = (func: FuncParam, partName: string, subtitle?: string) => {
+  const subtitleString = subtitle ? ` (${subtitle})` : '';
+  console.log(`Starting ${partName}${subtitleString}...`);
   const startTime = new Date().getTime();
   const result = func();
   const endTime = new Date().getTime();
@@ -18,25 +19,26 @@ export const execPart = (func: FuncParam, partName: string) => {
   console.log(`==================`);
 }
 
-export const execExamplePart1 = (func: FuncParam) => {
-  execPart(func, 'Example - Part 1');
+export const execExamplePart1 = (func: FuncParam, subtitle?: string) => {
+  execPart(func, 'Example - Part 1', subtitle);
 }
 
-export const execExamplePart2 = (func: FuncParam) => {
-  execPart(func, 'Example - Part 2');
+export const execExamplePart2 = (func: FuncParam, subtitle?: string) => {
+  execPart(func, 'Example - Part 2', subtitle);
 }
 
-export const execPart1 = (func: FuncParam) => {
-  execPart(func, 'Part 1');
+export const execPart1 = (func: FuncParam, subtitle?: string) => {
+  execPart(func, 'Part 1', subtitle);
 }
 
-export const execPart2 = (func: FuncParam) => {
-  execPart(func, 'Part 2');
+export const execPart2 = (func: FuncParam, subtitle?: string) => {
+  execPart(func, 'Part 2', subtitle);
 }
 
 type AsyncFuncParam = () => Promise<string | number>;
-export const execPartAsync = async (func: AsyncFuncParam, partName: string) => {
-  console.log(`Starting ${partName}...`);
+export const execPartAsync = async (func: AsyncFuncParam, partName: string, subtitle?: string) => {
+  const subtitleString = subtitle ? ` (${subtitle})` : '';
+  console.log(`Starting ${partName}${subtitleString}...`);
   const startTime = new Date().getTime();
   const result = await func();
   const endTime = new Date().getTime();
@@ -44,18 +46,18 @@ export const execPartAsync = async (func: AsyncFuncParam, partName: string) => {
   console.log(`==================`);
 }
 
-export const execExamplePart1Async = (func: AsyncFuncParam) => {
-  execPartAsync(func, 'Example - Part 1');
+export const execExamplePart1Async = (func: AsyncFuncParam, subtitle?: string) => {
+  execPartAsync(func, 'Example - Part 1', subtitle);
 }
 
-export const execExamplePart2Async = (func: AsyncFuncParam) => {
-  execPartAsync(func, 'Example - Part 2');
+export const execExamplePart2Async = (func: AsyncFuncParam, subtitle?: string) => {
+  execPartAsync(func, 'Example - Part 2', subtitle);
 }
 
-export const execPart1Async = (func: AsyncFuncParam) => {
-  execPartAsync(func, 'Part 1');
+export const execPart1Async = (func: AsyncFuncParam, subtitle?: string) => {
+  execPartAsync(func, 'Part 1', subtitle);
 }
 
-export const execPart2Async = (func: AsyncFuncParam) => {
-  execPartAsync(func, 'Part 2');
+export const execPart2Async = (func: AsyncFuncParam, subtitle?: string) => {
+  execPartAsync(func, 'Part 2', subtitle);
 }

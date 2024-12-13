@@ -77,6 +77,7 @@ Your puzzle answer was 107487112929999.
 
 
 import Decimal from "decimal.js";
+import { bignumber, lusolve, matrix } from "mathjs";
 import { execPart1, execPart2, sum } from "../helpers";
 import { INPUT } from "./input/input-day13";
 
@@ -120,7 +121,7 @@ function mutateGame(game: Game) {
  * https://stackoverflow.com/questions/13937782/calculating-the-point-of-intersection-of-two-lines
  * But had to convert to Decimal for increased precision
  */
-function lineIntersect2(a1: Decimal, b1: Decimal, a2: Decimal, b2: Decimal, a3: Decimal, b3: Decimal, a4: Decimal, b4: Decimal)
+function lineIntersect(a1: Decimal, b1: Decimal, a2: Decimal, b2: Decimal, a3: Decimal, b3: Decimal, a4: Decimal, b4: Decimal)
 {
     const diff1 = b4.minus(b3);
     const diff2 = a2.minus(a1);
@@ -149,7 +150,7 @@ function computeGameWithHighPrecision(game: Game) {
     const bY0 = Decimal.div(game.prizeY, game.yB);
     const bY1 = Decimal.div(game.prizeY - game.yA, game.yB);
 
-    const intersection = lineIntersect2(new Decimal(0), bX0, new Decimal(1), bX1, new Decimal(0), bY0, new Decimal(1), bY1);
+    const intersection = lineIntersect(new Decimal(0), bX0, new Decimal(1), bX1, new Decimal(0), bY0, new Decimal(1), bY1);
     if (intersection === null) {
         throw 'this should not happen';
     }
@@ -159,16 +160,45 @@ function computeGameWithHighPrecision(game: Game) {
     return undefined;
 }
 
+/**
+ * I was reminded after that I could use Matrix math for a simpler code answer
+ */
+function computeGameWithMatrix(game: Game) {
+    // const matrix = matrix([[game.xA, game.xB, game.prizeX], [game.yA, game.yB, game.prizeY]]);
+    const c = matrix([[bignumber(game.xA), bignumber(game.xB)], [bignumber(game.yA), bignumber(game.yB)]]);
+    const d = matrix([bignumber(game.prizeX), bignumber(game.prizeY)]);
+    const solvedMatrix = lusolve(c, d);
+    const a = solvedMatrix.get([0, 0]);
+    const b = solvedMatrix.get([1, 0]);
+    if (a % 1 === 0 && b % 1 === 0) {
+        return costA * a + costB * b;
+    }
+    return undefined;
+}
+
 execPart1(() => {
     const {games} = sharedSetup();
     const results = games.map(g => computeGameWithHighPrecision(g)).filter(n => n !== undefined);
     return sum(results);
-})
+}, 'Manual')
+
+execPart1(() => {
+    const {games} = sharedSetup();
+    const results = games.map(g => computeGameWithMatrix(g)).filter(n => n !== undefined);
+    return sum(results);
+}, 'MathJS')
 
 execPart2(() => {
     const {games} = sharedSetup();
     games.forEach(mutateGame);
     const results = games.map(g => computeGameWithHighPrecision(g)).filter(n => n !== undefined);
     return sum(results);
-})
+}, 'Manual')
+
+execPart2(() => {
+    const {games} = sharedSetup();
+    games.forEach(mutateGame);
+    const results = games.map(g => computeGameWithMatrix(g)).filter(n => n !== undefined);
+    return sum(results);
+}, 'MathJS')
 
