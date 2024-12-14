@@ -45,6 +45,15 @@ export type CoordinatePair<T = string> = {
   c2: Coordinate<T>,
 }
 
+type GetNeighborsParams<T> = {
+  allowDiagonals?: boolean,
+  valueToMatch?: T,
+  allowFakeCoords?: boolean,
+  directions?: CoordinateTransponse[],
+  recursive?: boolean,
+  coordSoFar?: Record<string, Coordinate<T>>
+};
+
 export function getAllPairs(coords: Coordinate[])
 {
     const n = coords.length;
@@ -95,12 +104,23 @@ export class Grid<T extends string | number = string> {
     return this.coordsByValue[value];
   }
 
-  getNeighbors(coord: Coordinate<T>, allowDiagonals: boolean, valueToMatch?: T, allowFakeCoords: boolean = false): Coordinate<T>[] {
+  getNeighbors(coord: Coordinate<T>, params : GetNeighborsParams<T>): Coordinate<T>[] {
+    let {allowDiagonals, valueToMatch, allowFakeCoords, directions, recursive, coordSoFar} = params;
     const row = coord.row;
     const col = coord.col;
-    const neighbors = ((allowDiagonals) ? DirectionsWithDiagonals : Directions).map(ct => this.getCoord(row + ct.row, col + ct.col, allowFakeCoords)).filter(c => c !== undefined);
+    const deleteMe = coordSoFar === undefined;
+    allowFakeCoords = allowFakeCoords ?? false;
+    directions = directions ?? ((allowDiagonals) ? DirectionsWithDiagonals : Directions);
+    coordSoFar = coordSoFar ?? {};
+    coordSoFar[coord.id] = coord;
+    let neighbors = directions.map(ct => this.getCoord(row + ct.row, col + ct.col, allowFakeCoords)).filter(c => c !== undefined);
     if (valueToMatch !== undefined) {
-      return neighbors.filter(c => c.value === valueToMatch)
+      neighbors = neighbors.filter(c => c.value === valueToMatch)
+    }
+    if (recursive) {
+      const neighborsToConsider = neighbors.filter(n => coordSoFar[n.id] === undefined);
+       neighborsToConsider.forEach(n => this.getNeighbors(n, {...params, coordSoFar: coordSoFar}));
+      return Object.values(coordSoFar);
     }
     return neighbors;
   }
@@ -110,5 +130,41 @@ export class Grid<T extends string | number = string> {
       return false;
     }
     return (coord.row >= 0 && coord.row < this.rowCount) && (coord.col >= 0 && coord.col < this.colCount);
+  }
+
+  updateCoordMap() {
+    Object.keys(this.coordsByValue).forEach(val => this.coordsByValue[val] = []);
+    this.coords.forEach(coord => {
+      if(this.coordsByValue[coord.value] == undefined) {
+        this.coordsByValue[coord.value] = [];
+      }
+      this.coordsByValue[coord.value].push(coord);
+    });
+  }
+
+  print(hideZero: boolean = true) {
+    let output = '';
+    for(let row = 0; row < this.rowCount; row++) {
+      for (let col = 0; col < this.colCount; col++) {
+        const coord = this.getCoord(row, col);
+        const val = coord.value.toString();
+        output += hideZero && val === '0' ? ' ' : val;
+      }
+      output += '\n';
+    }
+    console.log(output);
+  }
+
+  updateAll(value: T) {
+    this.coords.forEach(c => c.value = value);
+    this.updateCoordMap();
+  }
+  
+  static CreateEmptyGrid<T extends string | number = string>({rows, cols, defaultValue}: {rows: number, cols: number, defaultValue: T}) {
+    const rowsAsString: string[] = [];
+    for (let row = 0; row < rows; row++) {
+      rowsAsString[row] = Array(cols).fill('.').join('')
+    }
+    return new Grid<T>(rowsAsString, () => defaultValue);
   }
 }

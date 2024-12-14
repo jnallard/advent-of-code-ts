@@ -162,7 +162,7 @@ function fillRegion(coord: Coordinate, grid: Grid, region: RegionNbr, regions: R
     }
     regions[region].push(coord);
     regionLookup[regionKey] = region;
-    for(let neighbor of grid.getNeighbors(coord, false, coord.value)) {
+    for(let neighbor of grid.getNeighbors(coord, {valueToMatch: coord.value})) {
         fillRegion(neighbor, grid, region, regions, regionLookup);
     }
     return true;
@@ -184,7 +184,7 @@ function sharedSetup(input: string = INPUT) {
 }
 
 function countFencesPerCell(coord: Coordinate, grid: Grid, regionNbr: RegionNbr, regionLookup: RegionsLookup) {
-    return grid.getNeighbors(coord, false, undefined, true).filter(neighbor => regionLookup[getRegionKey(neighbor, coord.value)] !== regionNbr).length;
+    return grid.getNeighbors(coord, {allowFakeCoords: true}).filter(neighbor => regionLookup[getRegionKey(neighbor, coord.value)] !== regionNbr).length;
 }
 
 function countFencesPerRegion(regionNbr: RegionNbr, grid: Grid, regions: Regions, regionLookup: RegionsLookup) {
@@ -207,7 +207,7 @@ function getCellsOnSide(coord: Coordinate, outsideGridDirection: CoordinateTrans
         return 0; // We have already included this elsewhere
     }
     cellsSoFar[getSideCellId(coord, outsideGridDirection)] = coord;
-    const neighbors = grid.getNeighbors(coord, false).filter(neighbor => regionLookup[getRegionKey(neighbor, coord.value)] === regionNbr)
+    const neighbors = grid.getNeighbors(coord, {}).filter(neighbor => regionLookup[getRegionKey(neighbor, coord.value)] === regionNbr)
         .filter(c => 
             cellsSoFar[getSideCellId(c, outsideGridDirection)] === undefined 
             && getDirectionsOutsideRegion(c, grid, regionNbr, regionLookup).some(t => areTransposesEquivalent(t, outsideGridDirection)));
@@ -215,7 +215,7 @@ function getCellsOnSide(coord: Coordinate, outsideGridDirection: CoordinateTrans
 }
 
 function getDirectionsOutsideRegion(coord: Coordinate, grid: Grid, regionNbr: RegionNbr, regionLookup: RegionsLookup) {
-    return grid.getNeighbors(coord, false, undefined, true).filter(neighbor => regionLookup[getRegionKey(neighbor, coord.value)] !== regionNbr).map(neighbor => getTranspose(coord, neighbor));
+    return grid.getNeighbors(coord, {allowFakeCoords: true}).filter(neighbor => regionLookup[getRegionKey(neighbor, coord.value)] !== regionNbr).map(neighbor => getTranspose(coord, neighbor));
 }
 
 function mapSides(coord: Coordinate, cellsSoFar: Record<string, Coordinate>, grid: Grid, regionNbr: RegionNbr, regionLookup: RegionsLookup) {

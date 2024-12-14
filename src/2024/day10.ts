@@ -135,7 +135,7 @@ function getTrailheadScore(coord: Coordinate<number>, grid: Grid<number>, nextNu
         return possibleEnds.size;
     }
 
-    const matchingNeighbors = grid.getNeighbors(coord, false, nextNumber);
+    const matchingNeighbors = grid.getNeighbors(coord, {valueToMatch: nextNumber});
     matchingNeighbors.forEach(n => getTrailheadScore(n, grid, nextNumber + 1, possibleEnds));
     return possibleEnds.size;
 }
@@ -146,7 +146,7 @@ function getTrailheadScorePart2(coord: Coordinate<number>, grid: Grid<number>, n
         return possiblePaths.length;
     }
 
-    const matchingNeighbors = grid.getNeighbors(coord, false, nextNumber);
+    const matchingNeighbors = grid.getNeighbors(coord, {valueToMatch: nextNumber});
     matchingNeighbors.forEach(n => getTrailheadScorePart2(n, grid, nextNumber + 1, possiblePaths));
     return possiblePaths.length;
 }
