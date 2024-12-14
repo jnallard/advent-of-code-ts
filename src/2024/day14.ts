@@ -126,7 +126,7 @@ Your puzzle answer was 7892.
 
 
 import { Coordinate, CoordinateTransponse, E, Grid, N, S, W } from "../grid-helpers";
-import { execExamplePart1, execExamplePart2, execPart1, execPart2, execPart2Async } from "../helpers";
+import { execExamplePart1, execPart1, execPart2 } from "../helpers";
 import { INPUT, SAMPLE_INPUT } from "./input/input-day14";
 
 const EXAMPLE_GRID_SIZE: CoordinateTransponse = {
