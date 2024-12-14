@@ -202,6 +202,11 @@ function calcSafetyFactor(robots: Robot[], grid: Grid<number>) {
     return quadrants['TL'] * quadrants['TR'] * quadrants['BL'] * quadrants['BR'];
 }
 
+function areRobotsInVerticalAndHorizontalLines(robots: Robot[], grid: Grid<number>) {
+    return robots.some(robot => grid.getNeighbors(robot.currentPose, {directions: [N, S], valueToMatch: 1, recursive: true}).length > 7
+            && grid.getNeighbors(robot.currentPose, {directions: [E, W], valueToMatch: 1, recursive: true}).length > 7);
+}
+
 execExamplePart1(() => {
     const {grid, robots} = sharedSetup(EXAMPLE_GRID_SIZE, SAMPLE_INPUT);
     robots.forEach(robot => runRobot(robot, grid, 100));
@@ -214,6 +219,7 @@ execPart1(() => {
     return calcSafetyFactor(robots, grid);
 })
 
+/** This was my first attempt - where I didn't consider safety scores/didn't think it would be in only one quadrant. I thought I could look for a map with long straight lines up and down.*/
 execPart2(() => {
     const {grid, robots} = sharedSetup(MAIN_GRID_SIZE);
     let count = 0;
@@ -221,13 +227,49 @@ execPart2(() => {
         count++;
         grid.updateAll(0);
         robots.forEach(robot => runRobot(robot, grid, 1));
-        const isMaybeTree = robots.some(robot => grid.getNeighbors(robot.currentPose, {directions: [N, S], valueToMatch: 1, recursive: true}).length > 7
-            && grid.getNeighbors(robot.currentPose, {directions: [E, W], valueToMatch: 1, recursive: true}).length > 7);
+        const isMaybeTree = areRobotsInVerticalAndHorizontalLines(robots, grid);
         if (isMaybeTree) {
             break;
         }
     }
     // grid.print(true);
     return count;
-})
+}, 'original solution with only line checking')
+
+/** After realizing I could have used safety scores, I did trial and error to see what safety score would only return the tree */
+execPart2(() => {
+    const threshold = 70_000_000; // trial and error - manually lower threshold to remove previous value returned and rerun
+    const {grid, robots} = sharedSetup(MAIN_GRID_SIZE);
+    let count = 0;
+    while(true) {
+        count++;
+        grid.updateAll(0);
+        robots.forEach(robot => runRobot(robot, grid, 1));
+        const safetyFactor = calcSafetyFactor(robots, grid);
+        if (safetyFactor < threshold) {
+            break;
+        }
+    }
+    // grid.print(true);
+    return count;
+}, 'safety score with trial and error')
+
+/** Next I wanted a solution that would work without trial and error and with a new puzzle input, which just involved a lowering threshold and my lines check */
+execPart2(() => {
+    let threshold = Number.POSITIVE_INFINITY; // this will lower to the lowest seen so far
+    const {grid, robots} = sharedSetup(MAIN_GRID_SIZE);
+    let count = 0;
+    while(true) {
+        count++;
+        grid.updateAll(0);
+        robots.forEach(robot => runRobot(robot, grid, 1));
+        const safetyFactor = calcSafetyFactor(robots, grid);
+        if (safetyFactor < threshold && areRobotsInVerticalAndHorizontalLines(robots, grid)) {
+            break;
+        }
+        threshold = Math.min(threshold, safetyFactor);
+    }
+    // grid.print(true);
+    return count;
+}, 'combined safety and line checking')
 
