@@ -108,7 +108,6 @@ export class Grid<T extends string | number = string> {
     let {allowDiagonals, valueToMatch, allowFakeCoords, directions, recursive, coordSoFar} = params;
     const row = coord.row;
     const col = coord.col;
-    const deleteMe = coordSoFar === undefined;
     allowFakeCoords = allowFakeCoords ?? false;
     directions = directions ?? ((allowDiagonals) ? DirectionsWithDiagonals : Directions);
     coordSoFar = coordSoFar ?? {};
