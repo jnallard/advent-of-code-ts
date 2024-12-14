@@ -142,7 +142,7 @@ export class Grid<T extends string | number = string> {
     });
   }
 
-  print(hideZero: boolean = true) {
+  getDisplayString(hideZero: boolean = true) {
     let output = '';
     for(let row = 0; row < this.rowCount; row++) {
       for (let col = 0; col < this.colCount; col++) {
@@ -152,7 +152,11 @@ export class Grid<T extends string | number = string> {
       }
       output += '\n';
     }
-    console.log(output);
+    return output;
+  }
+
+  print(hideZero: boolean = true) {
+    console.log(this.getDisplayString(hideZero));
   }
 
   updateAll(value: T) {
