@@ -136,7 +136,7 @@ Your puzzle answer was 502.
 
 import { ConsoleCommands, formatConsoleOutput } from "../debug-helpers";
 import { ArrowDirection, ArrowDirections, Coordinate, Grid } from "../grid-helpers";
-import { execPart } from "../helpers";
+import { execPart, execPart1, execPart2 } from "../helpers";
 import { INPUT, SAMPLE_INPUT_1, SAMPLE_INPUT_2 } from "./input/input-day16";
 
 const WALL = '#';
@@ -163,57 +163,84 @@ function sharedSetup(input: string = INPUT) {
     return {maze};
 }
 
-function solvePose(pose: Coordinate, currentDirection: ArrowDirection, costSoFar: number, maze: Grid, scoresSoFar: Record<string, number>, path: Coordinate[], endPaths: Record<number, Coordinate[][]>) {
-    path.push(pose);
-    if (pose.value === WALL) {
-        return Number.POSITIVE_INFINITY;
-    }
-    if (costSoFar - 1001 > (scoresSoFar[pose.id] ?? Number.POSITIVE_INFINITY)) {
-        return Number.POSITIVE_INFINITY;
-    }
-    if (pose.value === END) {
-        endPaths[costSoFar] = (endPaths[costSoFar] ?? []).concat([path]);
-        scoresSoFar[pose.id] = costSoFar;
-        return costSoFar;
-    }
-    scoresSoFar[pose.id] = costSoFar;
-    const straightDirectionPose = maze.getCoordWithTranspose(pose, ArrowDirections[currentDirection]);
-    const scores: number[] = [];
-    if (straightDirectionPose.value !== WALL) {
-        scores.push(solvePose(straightDirectionPose, currentDirection, costSoFar + 1, maze, scoresSoFar, [...path], endPaths));
-    }
-
-    const possibleTurns = TurnedArrowDirections[currentDirection];
-    const possiblePoses = possibleTurns.map(t => ({newPose: maze.getCoordWithTranspose(pose, ArrowDirections[t]), newTurn: t}));
-    scores.push(...possiblePoses.map(({newPose, newTurn}) => solvePose(newPose, newTurn, costSoFar + 1001, maze, scoresSoFar, [...path], endPaths)));
-    const lowerScore = Math.min(...scores);
-    return lowerScore;
+type Move = {
+    nextPose: Coordinate,
+    direction: ArrowDirection,
+    cost: number,
+    path: Coordinate[],
 }
 
-function solveMaze(maze: Grid) {
+function getKnownCost(pose: Coordinate, direction: ArrowDirection, scoresSoFar: Record<string, number>) {
+    return scoresSoFar[`${pose.id}-${direction}`] ?? Number.POSITIVE_INFINITY;
+}
+
+function setKnownCost(pose: Coordinate, direction: ArrowDirection, scoresSoFar: Record<string, number>, value: number) {
+    return scoresSoFar[`${pose.id}-${direction}`] = value;
+}
+
+function isTolerable(cost: number, pose: Coordinate, direction: ArrowDirection, scoresSoFar: Record<string, number>) {
+    return cost <= getKnownCost(pose, direction, scoresSoFar);
+}
+
+function getMoves(pose: Coordinate, maze: Grid, currentDirection: ArrowDirection, costSoFar: number, path: Coordinate[], scoresSoFar: Record<string, number>): Move[] {
+    const moves: Move[] = [];
+    const forwardPose = maze.getCoordWithTranspose(pose, ArrowDirections[currentDirection]);
+    const straightCost = costSoFar + 1;
+    const turnCost = costSoFar + 1000;
+    if (forwardPose.value !== WALL && isTolerable(straightCost, forwardPose, currentDirection, scoresSoFar)) {
+        setKnownCost(forwardPose, currentDirection, scoresSoFar, straightCost);
+        moves.push({nextPose: forwardPose, direction: currentDirection, cost: costSoFar + 1, path: path.concat(forwardPose)});
+    }
+    const possibleTurns = TurnedArrowDirections[currentDirection];
+    const possibleTurnPoses: Move[] = possibleTurns.map(t => ({type: 'turn' as 'turn', nextPose: pose, nextPoseInference: maze.getCoordWithTranspose(pose, ArrowDirections[t]), direction: t, path: path, cost: costSoFar + 1000})).filter(p => p.nextPoseInference.value !== WALL && isTolerable(turnCost, p.nextPose, p.direction, scoresSoFar));
+    possibleTurnPoses.forEach(p => setKnownCost(pose, p.direction, scoresSoFar, turnCost));
+    moves.push(...possibleTurnPoses);
+    return moves;
+}
+
+function solveMaze(maze: Grid, findSinglePath: boolean, printBestMazes: boolean) {
     const startPose = maze.coordsByValue[START][0];
     const endPose = maze.coordsByValue[END][0];
-    const scoresSoFar: Record<string, number> = {};
-    const endPaths: Record<number, Coordinate[][]> = {};
-    const lowestScore = solvePose(startPose, '>', 0, maze, scoresSoFar, [], endPaths);
-    const bestEndPaths = endPaths[lowestScore];
-    console.log('best paths');
-    bestEndPaths.forEach(p => maze.print({characterReplacements: mazePrintReplacements, highlightCoord: endPose, path: p, doubleWidth: true}));
-    const set = new Set(bestEndPaths.flat())
-    return `Lowest Score: ${lowestScore}.\tBest Seats: ${set.size}`;
+    const scoreSoFar: Record<string, number> = {};
+    const possiblePaths: Coordinate[][] = [];
+    let cheapestSoFar = Number.POSITIVE_INFINITY;
+    let nextMoves = getMoves(startPose, maze, '>', 0, [startPose], scoreSoFar);
+    while (nextMoves.some(a => a.cost <= cheapestSoFar)) {
+        const sortedMoves = nextMoves.sort((a, b) => a.cost - b.cost);
+        const nextMove = sortedMoves[0];
+        if (nextMove.nextPose === endPose) {
+            possiblePaths.push(nextMove.path);
+            cheapestSoFar = nextMove.cost;
+            if (findSinglePath) {
+                return `Lowest Score: ${cheapestSoFar}`
+            }
+        }
+        const remainingMoves = sortedMoves.slice(1);
+        nextMoves = remainingMoves.concat(getMoves(nextMove.nextPose, maze, nextMove.direction, nextMove.cost, nextMove.path, scoreSoFar));
+    }
+    if (printBestMazes) {
+        possiblePaths.forEach(p => maze.print({characterReplacements: mazePrintReplacements, highlightCoord: endPose, path: p, doubleWidth: true}));
+    }
+    const set = new Set(possiblePaths.flat())
+    return `Lowest Score: ${cheapestSoFar}.\tBest Seats: ${set.size}`;
 }
 
 execPart(() => {
     const {maze} = sharedSetup(SAMPLE_INPUT_1);
-    return solveMaze(maze);
+    return solveMaze(maze, false, true);
 }, 'Sample 1')
 
 execPart(() => {
     const {maze} = sharedSetup(SAMPLE_INPUT_2);
-    return solveMaze(maze);
-}, 'Sample 2')
+    return solveMaze(maze, false, true);
+}, 'Sample 2');
 
-execPart(() => {
+execPart1(() => {
     const {maze} = sharedSetup();
-    return solveMaze(maze);
-}, 'Part 1 & 2');
+    return solveMaze(maze, true, false);
+});
+
+execPart2(() => {
+    const {maze} = sharedSetup();
+    return solveMaze(maze, false, false);
+});
