@@ -134,6 +134,7 @@ Your puzzle answer was 502.
 */
 
 
+import { ConsoleCommands, formatConsoleOutput } from "../debug-helpers";
 import { ArrowDirection, ArrowDirections, Coordinate, Grid } from "../grid-helpers";
 import { execPart } from "../helpers";
 import { INPUT, SAMPLE_INPUT_1, SAMPLE_INPUT_2 } from "./input/input-day16";
@@ -141,6 +142,12 @@ import { INPUT, SAMPLE_INPUT_1, SAMPLE_INPUT_2 } from "./input/input-day16";
 const WALL = '#';
 const START = 'S';
 const END = 'E';
+
+const mazePrintReplacements: Record<string, string> = {
+    '.': ' ',
+    '#': formatConsoleOutput('#', [ConsoleCommands.Hidden, ConsoleCommands.BgWhite]),
+    'S': formatConsoleOutput('S', [ConsoleCommands.BgYellow]),
+}
 
 export const TurnedArrowDirections: Record<ArrowDirection, ArrowDirection[]> = {
     '^': ['<', '>'],
@@ -190,7 +197,7 @@ function solveMaze(maze: Grid) {
     const lowestScore = solvePose(startPose, '>', 0, maze, scoresSoFar, [], endPaths);
     const bestEndPaths = endPaths[lowestScore];
     console.log('best paths');
-    bestEndPaths.forEach(p => maze.print({'.': ' ', '#': '#'}, endPose, p));
+    bestEndPaths.forEach(p => maze.print(mazePrintReplacements, endPose, p));
     const set = new Set(bestEndPaths.flat())
     return `Lowest Score: ${lowestScore}.\tBest Seats: ${set.size}`;
 }
