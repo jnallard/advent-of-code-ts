@@ -163,21 +163,24 @@ export class Grid<T extends string | number = string> {
     });
   }
 
-  getDisplayString(hideZero: boolean = true) {
+  getDisplayString(hideZero: boolean = true, highlightCoord?: Coordinate<T>, path?: Coordinate<T>[]) {
     let output = '';
     for(let row = 0; row < this.rowCount; row++) {
       for (let col = 0; col < this.colCount; col++) {
         const coord = this.getCoord(row, col);
-        const val = coord.value.toString();
-        output += hideZero && val === '0' ? ' ' : val;
+        const rawValue = coord.value.toString();
+        let val = hideZero && rawValue === '0' ? ' ' : rawValue;
+        val = highlightCoord && highlightCoord.row == row && highlightCoord.col == col ? `${ConsoleBgRed}${val}${ConsoleColorReset}`: val;
+        val = path && path.find(c => c.row == row && c.col == col) ? `${ConsoleBgCyan}${val}${ConsoleColorReset}`: val;
+        output += val;
       }
       output += '\n';
     }
     return output;
   }
 
-  print(hideZero: boolean = true) {
-    console.log(this.getDisplayString(hideZero));
+  print(hideZero: boolean = true, highlightCoord?: Coordinate<T>, path?: Coordinate<T>[]) {
+    console.log(this.getDisplayString(hideZero, highlightCoord, path));
   }
 
   updateAll(value: T) {
@@ -193,3 +196,8 @@ export class Grid<T extends string | number = string> {
     return new Grid<T>(rowsAsString, () => defaultValue);
   }
 }
+
+const ConsoleColorReset = "\x1b[0m"
+const ConsoleFgRed = "\x1b[31m"
+const ConsoleBgRed = "\x1b[41m"
+const ConsoleBgCyan = "\x1b[46m"
