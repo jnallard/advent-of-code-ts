@@ -136,7 +136,7 @@ Your puzzle answer was 502.
 
 import { ConsoleCommands, formatConsoleOutput } from "../debug-helpers";
 import { ArrowDirection, ArrowDirections, Coordinate, Grid } from "../grid-helpers";
-import { MathJSMinHeap } from "../heap-helper";
+import { MinHeap } from "../heap-helper";
 import { execPart, execPart1, execPart2 } from "../helpers";
 import { INPUT, SAMPLE_INPUT_1, SAMPLE_INPUT_2 } from "./input/input-day16";
 
@@ -205,10 +205,10 @@ function solveMaze(maze: Grid, findSinglePath: boolean, printBestMazes: boolean)
     const scoreSoFar: Record<string, number> = {};
     const possiblePaths: Coordinate[][] = [];
     let cheapestSoFar = Number.POSITIVE_INFINITY;
-    const heap = new MathJSMinHeap<Move>();
+    const heap = new MinHeap<Move>();
     const nextMoves = getMoves(startPose, maze, '>', 0, [startPose], scoreSoFar);
     nextMoves.forEach(move => heap.insert(move.cost, move));
-    let nextMove = heap.extractMinimum().value;
+    let nextMove = heap.extractMin()!.data;
     while (nextMove.cost <= cheapestSoFar) {
         if (nextMove.nextPose === endPose) {
             possiblePaths.push(nextMove.path);
@@ -219,7 +219,7 @@ function solveMaze(maze: Grid, findSinglePath: boolean, printBestMazes: boolean)
         }
         const newMoves = getMoves(nextMove.nextPose, maze, nextMove.direction, nextMove.cost, nextMove.path, scoreSoFar);
         newMoves.forEach(move => heap.insert(move.cost, move));
-        nextMove = heap.extractMinimum().value;
+        nextMove = heap.extractMin()!.data;
     }
     if (printBestMazes) {
         possiblePaths.forEach(p => maze.print({characterReplacements: mazePrintReplacements, highlightCoord: endPose, path: p, doubleWidth: true}));

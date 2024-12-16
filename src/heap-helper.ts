@@ -1,22 +1,74 @@
-import * as math from "mathjs";
+type HeapEntry<T> = {value: number, data: T};
 
-/** TODO: replace with my own heap implementation or better type safe library . Mathjs doesn't have types for their FibonacciHeap */
-export class MathJSMinHeap<T> {
-  private readonly abstractedHeap = new (math as any).FibonacciHeap();
-
-  insert(number: number, value: T) {
-    this.abstractedHeap.insert(number, value);
-  }
-
-  isEmpty() {
-    return this.abstractedHeap.isEmpty();
-  }
+/** Writing myself, but following an online guide. Need to refresh myself on heaps. */
+export class MinHeap<T> {
+  private values: HeapEntry<T>[] = [];
 
   size() {
-    return this.abstractedHeap.size();
+    return this.values.length;
   }
 
-  extractMinimum() {
-    return this.abstractedHeap.extractMinimum() as {key: number, value: T};
+  peek() {
+    return this.values[0];
+  }
+
+  insert(value: number, data: T) {
+    this.values.push({value, data});
+    this.heapifyUp();
+  }
+
+  extractMin() {
+    if (this.size() === 0) {
+      return undefined;
+    }
+
+    const minKvp = this.values[0];
+    const lastKvp = this.values.pop()!;
+    if (this.size() > 0) {
+      this.values[0] = lastKvp;
+      this.heapifyDown();
+    }
+    return minKvp;
+  }
+
+  heapifyUp() {
+    let index = this.size() - 1;
+    while(index > 0) {
+      const parentIndex = Math.floor((index - 1) / 2);
+      if (this.values[parentIndex].value > this.values[index].value) {
+        this.swap(parentIndex, index);
+        index = parentIndex;
+      } else {
+        break;
+      }
+    }
+  }
+
+  heapifyDown() {
+    let index = 0;
+    while (true) {
+      const leftChildIndex = 2 * index + 1;
+      const rightChildIndex = 2 * index + 2;
+      let smallestChildIndex = index;
+
+      if (leftChildIndex < this.size() && this.values[leftChildIndex].value < this.values[smallestChildIndex].value) {
+        smallestChildIndex = leftChildIndex;
+      }
+
+      if (rightChildIndex < this.size() && this.values[rightChildIndex].value < this.values[smallestChildIndex].value) {
+        smallestChildIndex = rightChildIndex;
+      }
+
+      if (smallestChildIndex !== index) {
+        this.swap(index, smallestChildIndex);
+        index = smallestChildIndex;
+      } else {
+        break;
+      }
+    }
+  }
+
+  private swap(i: number, j: number) {
+    [this.values[i], this.values[j]] = [this.values[j], this.values[i]];
   }
 }
