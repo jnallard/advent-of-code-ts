@@ -136,6 +136,7 @@ Your puzzle answer was 502.
 
 import { ConsoleCommands, formatConsoleOutput } from "../debug-helpers";
 import { ArrowDirection, ArrowDirections, Coordinate, Grid } from "../grid-helpers";
+import { MathJSMinHeap } from "../heap-helper";
 import { execPart, execPart1, execPart2 } from "../helpers";
 import { INPUT, SAMPLE_INPUT_1, SAMPLE_INPUT_2 } from "./input/input-day16";
 
@@ -204,10 +205,11 @@ function solveMaze(maze: Grid, findSinglePath: boolean, printBestMazes: boolean)
     const scoreSoFar: Record<string, number> = {};
     const possiblePaths: Coordinate[][] = [];
     let cheapestSoFar = Number.POSITIVE_INFINITY;
-    let nextMoves = getMoves(startPose, maze, '>', 0, [startPose], scoreSoFar);
-    while (nextMoves.some(a => a.cost <= cheapestSoFar)) {
-        const sortedMoves = nextMoves.sort((a, b) => a.cost - b.cost);
-        const nextMove = sortedMoves[0];
+    const heap = new MathJSMinHeap<Move>();
+    const nextMoves = getMoves(startPose, maze, '>', 0, [startPose], scoreSoFar);
+    nextMoves.forEach(move => heap.insert(move.cost, move));
+    let nextMove = heap.extractMinimum().value;
+    while (nextMove.cost <= cheapestSoFar) {
         if (nextMove.nextPose === endPose) {
             possiblePaths.push(nextMove.path);
             cheapestSoFar = nextMove.cost;
@@ -215,8 +217,9 @@ function solveMaze(maze: Grid, findSinglePath: boolean, printBestMazes: boolean)
                 return `Lowest Score: ${cheapestSoFar}`
             }
         }
-        const remainingMoves = sortedMoves.slice(1);
-        nextMoves = remainingMoves.concat(getMoves(nextMove.nextPose, maze, nextMove.direction, nextMove.cost, nextMove.path, scoreSoFar));
+        const newMoves = getMoves(nextMove.nextPose, maze, nextMove.direction, nextMove.cost, nextMove.path, scoreSoFar);
+        newMoves.forEach(move => heap.insert(move.cost, move));
+        nextMove = heap.extractMinimum().value;
     }
     if (printBestMazes) {
         possiblePaths.forEach(p => maze.print({characterReplacements: mazePrintReplacements, highlightCoord: endPose, path: p, doubleWidth: true}));
