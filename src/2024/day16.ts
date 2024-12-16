@@ -146,7 +146,8 @@ const END = 'E';
 const mazePrintReplacements: Record<string, string> = {
     '.': ' ',
     '#': formatConsoleOutput('#', [ConsoleCommands.Hidden, ConsoleCommands.BgWhite]),
-    'S': formatConsoleOutput('S', [ConsoleCommands.BgYellow]),
+    'S': formatConsoleOutput(' ', [ConsoleCommands.BgYellow]),
+    'E': formatConsoleOutput(' ', [ConsoleCommands.BgGreen]),
 }
 
 export const TurnedArrowDirections: Record<ArrowDirection, ArrowDirection[]> = {
