@@ -163,13 +163,13 @@ export class Grid<T extends string | number = string> {
     });
   }
 
-  getDisplayString(hideZero: boolean = true, highlightCoord?: Coordinate<T>, path?: Coordinate<T>[]) {
+  getDisplayString(characterReplacements: Record<string, string> = {}, highlightCoord?: Coordinate<T>, path?: Coordinate<T>[]) {
     let output = '';
     for(let row = 0; row < this.rowCount; row++) {
       for (let col = 0; col < this.colCount; col++) {
         const coord = this.getCoord(row, col);
         const rawValue = coord.value.toString();
-        let val = hideZero && rawValue === '0' ? ' ' : rawValue;
+        let val = characterReplacements[rawValue] ?? rawValue;
         val = highlightCoord && highlightCoord.row == row && highlightCoord.col == col ? `${ConsoleBgRed}${val}${ConsoleColorReset}`: val;
         val = path && path.find(c => c.row == row && c.col == col) ? `${ConsoleBgCyan}${val}${ConsoleColorReset}`: val;
         output += val;
@@ -179,8 +179,8 @@ export class Grid<T extends string | number = string> {
     return output;
   }
 
-  print(hideZero: boolean = true, highlightCoord?: Coordinate<T>, path?: Coordinate<T>[]) {
-    console.log(this.getDisplayString(hideZero, highlightCoord, path));
+  print(characterReplacements: Record<string, string> = {}, highlightCoord?: Coordinate<T>, path?: Coordinate<T>[]) {
+    console.log(this.getDisplayString(characterReplacements, highlightCoord, path));
   }
 
   updateAll(value: T) {
