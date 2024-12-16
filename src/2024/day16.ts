@@ -197,7 +197,7 @@ function solveMaze(maze: Grid) {
     const lowestScore = solvePose(startPose, '>', 0, maze, scoresSoFar, [], endPaths);
     const bestEndPaths = endPaths[lowestScore];
     console.log('best paths');
-    bestEndPaths.forEach(p => maze.print(mazePrintReplacements, endPose, p));
+    bestEndPaths.forEach(p => maze.print({characterReplacements: mazePrintReplacements, highlightCoord: endPose, path: p, doubleWidth: true}));
     const set = new Set(bestEndPaths.flat())
     return `Lowest Score: ${lowestScore}.\tBest Seats: ${set.size}`;
 }

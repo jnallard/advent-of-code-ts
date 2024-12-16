@@ -65,6 +65,13 @@ type GetNeighborsParams<T> = {
   coordSoFar?: Record<string, Coordinate<T>>
 };
 
+type DisplayGridParams<T> = {
+  characterReplacements?: Record<string, string>,
+  highlightCoord?: Coordinate<T>,
+  path?: Coordinate<T>[],
+  doubleWidth?: boolean,
+}
+
 export function getAllPairs(coords: Coordinate[])
 {
     const n = coords.length;
@@ -163,13 +170,18 @@ export class Grid<T extends string | number = string> {
     });
   }
 
-  getDisplayString(characterReplacements: Record<string, string> = {}, highlightCoord?: Coordinate<T>, path?: Coordinate<T>[]) {
+  getDisplayString(params: DisplayGridParams<T>) {
+    let {characterReplacements, highlightCoord, path, doubleWidth} = params;
+    characterReplacements = characterReplacements ?? {};
     let output = '';
     for(let row = 0; row < this.rowCount; row++) {
       for (let col = 0; col < this.colCount; col++) {
         const coord = this.getCoord(row, col);
         const rawValue = coord.value.toString();
         let val = characterReplacements[rawValue] ?? rawValue;
+        if (doubleWidth) {
+          val = val + val;
+        }
         val = highlightCoord && highlightCoord.row == row && highlightCoord.col == col ? `${ConsoleBgRed}${val}${ConsoleColorReset}`: val;
         val = path && path.find(c => c.row == row && c.col == col) ? `${ConsoleBgCyan}${val}${ConsoleColorReset}`: val;
         output += val;
@@ -179,8 +191,8 @@ export class Grid<T extends string | number = string> {
     return output;
   }
 
-  print(characterReplacements: Record<string, string> = {}, highlightCoord?: Coordinate<T>, path?: Coordinate<T>[]) {
-    console.log(this.getDisplayString(characterReplacements, highlightCoord, path));
+  print(params: DisplayGridParams<T>) {
+    console.log(this.getDisplayString(params));
   }
 
   updateAll(value: T) {
