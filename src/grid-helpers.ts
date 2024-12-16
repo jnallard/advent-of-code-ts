@@ -23,14 +23,14 @@ export function getTransposeString(t: CoordinateTransponse) {
   return `tr${t.row}-tc${t.col}`;
 }
 
-export const N: CoordinateTransponse = {row: 1, col: 0};
+export const N: CoordinateTransponse = {row: -1, col: 0};
 export const E: CoordinateTransponse = {row: 0, col: 1};
-export const S: CoordinateTransponse = {row: -1, col: 0};
+export const S: CoordinateTransponse = {row: 1, col: 0};
 export const W: CoordinateTransponse = {row: 0, col: -1};
-export const NE: CoordinateTransponse = {row: 1, col: 1};
-export const SE: CoordinateTransponse = {row: -1, col: 1};
-export const SW: CoordinateTransponse = {row: -1, col: -1};
-export const NW: CoordinateTransponse = {row: 1, col: -1};
+export const NE: CoordinateTransponse = {row: -1, col: 1};
+export const SE: CoordinateTransponse = {row: 1, col: 1};
+export const SW: CoordinateTransponse = {row: 1, col: -1};
+export const NW: CoordinateTransponse = {row: -1, col: -1};
 
 export const Directions = [
   N, E, S, W,
@@ -40,6 +40,16 @@ export const DirectionsWithDiagonals = [
   N, E, S, W, NE, SE, SW, NW
 ]
 
+export const arrowDirectionChars = ['v', '^', '>', '<'] as const;
+export type ArrowDirection = typeof arrowDirectionChars[number];
+
+export const ArrowDirections: Record<ArrowDirection, CoordinateTransponse> = {
+    '^': N,
+    '>': E,
+    'v': S,
+    '<': W,
+}
+
 export type CoordinatePair<T = string> = {
   c1: Coordinate<T>,
   c2: Coordinate<T>,
@@ -48,6 +58,7 @@ export type CoordinatePair<T = string> = {
 type GetNeighborsParams<T> = {
   allowDiagonals?: boolean,
   valueToMatch?: T,
+  valuesToMatch?: T[],
   allowFakeCoords?: boolean,
   directions?: CoordinateTransponse[],
   recursive?: boolean,
@@ -100,21 +111,32 @@ export class Grid<T extends string | number = string> {
     return this.coordsById[getCoordStringRaw(row, col)] ?? (allowFakeCoord ? {col, row, id: getCoordStringRaw(row, col), value: '' as T, isFake: true}: undefined);
   }
 
+  getCoordWithTranspose(coord: Coordinate<T>, transpose: CoordinateTransponse, allowFakeCoord: boolean = false) {
+    return this.getCoord(coord.row + transpose.row, coord.col + transpose.col, allowFakeCoord)
+  }
+
   getCoordsByValue(value: T) {
     return this.coordsByValue[value];
   }
 
   getNeighbors(coord: Coordinate<T>, params : GetNeighborsParams<T>): Coordinate<T>[] {
-    let {allowDiagonals, valueToMatch, allowFakeCoords, directions, recursive, coordSoFar} = params;
+    let {allowDiagonals, valueToMatch, valuesToMatch, allowFakeCoords, directions, recursive, coordSoFar} = params;
+    if (valueToMatch) {
+      valuesToMatch = [valueToMatch];
+    }
     const row = coord.row;
     const col = coord.col;
     allowFakeCoords = allowFakeCoords ?? false;
     directions = directions ?? ((allowDiagonals) ? DirectionsWithDiagonals : Directions);
     coordSoFar = coordSoFar ?? {};
-    coordSoFar[coord.id] = coord;
     let neighbors = directions.map(ct => this.getCoord(row + ct.row, col + ct.col, allowFakeCoords)).filter(c => c !== undefined);
-    if (valueToMatch !== undefined) {
-      neighbors = neighbors.filter(c => c.value === valueToMatch)
+    if (valuesToMatch !== undefined) {
+      neighbors = neighbors.filter(c => valuesToMatch.includes(c.value))
+      if (valuesToMatch.includes(coord.value)) {
+        coordSoFar[coord.id] = coord;
+      }
+    } else {
+      coordSoFar[coord.id] = coord;
     }
     if (recursive) {
       const neighborsToConsider = neighbors.filter(n => coordSoFar[n.id] === undefined);
