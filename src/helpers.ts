@@ -8,7 +8,10 @@ export function round(num: number) {
   return Math.round((num + Number.EPSILON) * 1000000) / 1000000;
 }
 
-type FuncParam = () => string | number;
+export const bigIntMin = (...args: bigint[]) => args.reduce((m, e) => e < m ? e : m);
+export const bigIntMax = (...args: bigint[]) => args.reduce((m, e) => e > m ? e : m);
+
+type FuncParam = () => string | number | bigint;
 export const execPart = (func: FuncParam, partName: string, subtitle?: string) => {
   const subtitleString = subtitle ? ` (${subtitle})` : '';
   console.log(`Starting ${partName}${subtitleString}...`);
@@ -35,7 +38,7 @@ export const execPart2 = (func: FuncParam, subtitle?: string) => {
   execPart(func, 'Part 2', subtitle);
 }
 
-type AsyncFuncParam = () => Promise<string | number>;
+type AsyncFuncParam = () => Promise<string | number | bigint>;
 export const execPartAsync = async (func: AsyncFuncParam, partName: string, subtitle?: string) => {
   const subtitleString = subtitle ? ` (${subtitle})` : '';
   console.log(`Starting ${partName}${subtitleString}...`);
