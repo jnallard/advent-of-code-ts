@@ -80,8 +80,6 @@ Using password method 0x434C49434B, what is the password to open the door?
 
 */
 
-
-import { forEach } from "mathjs";
 import { execExamplePart1, execExamplePart2, execPart1, execPart2 } from "../helpers";
 import { INPUT, SAMPLE_INPUT } from "./input/input-day1";
 
@@ -95,7 +93,6 @@ function sharedSetup(input: string = INPUT): {lines: Line[]} {
         .split('\n')
         .filter(l => !!l)
         .map(l => ({isLeft: l.startsWith('L'), clicks: +l.substring(1)} as Line));
-    // console.log(lines);
     return {lines};
 }
 
@@ -112,16 +109,17 @@ function getPasswordPart1(lines: Line[]) {
     return passwordTotal;
 }
 
+// I wanted to do this is a better math-oriented way, but think I had a bug that missed some edge cases so my result was slightly off.
 function getPasswordPart2(lines: Line[]) {
     let position = 50;
     let passwordTotal = 0;
     for(let line of lines) {
-        let previousPos = position;
-        position += (line.isLeft ? -1 : 1) * line.clicks;
-        position %= 100;
-        // TODO: fix
-        if ((line.isLeft && position > previousPos) || (!line.isLeft && position < previousPos)) {
-            passwordTotal++;
+        let ticks = line.clicks;
+        for (let i = 0; i < ticks; i++) {
+            position += line.isLeft ? -1 : 1;
+            if (position % 100 === 0) {
+                passwordTotal++;
+            }
         }
     }
     return passwordTotal;
