@@ -1,4 +1,16 @@
 /*
+--- Day 1: Secret Entrance ---
+
+The Elves have good news and bad news.
+
+The good news is that they've discovered project management! This has given them the tools they need to prevent their usual Christmas emergency. For example, they now know that the North Pole decorations need to be finished soon so that other critical tasks can start on time.
+
+The bad news is that they've realized they have a different emergency: according to their resource planning, none of them have any time left to decorate the North Pole!
+
+To save Christmas, the Elves need you to finish decorating the North Pole by December 12th.
+
+Collect stars by solving puzzles. Two puzzles will be made available on each day; the second puzzle is unlocked when you complete the first. Each puzzle grants one star. Good luck!
+
 You arrive at the secret entrance to the North Pole base ready to start decorating. Unfortunately, the password seems to have been changed, so you can't get in. A document taped to the wall helpfully explains:
 
 "Due to new security protocols, the password is locked in the safe below. Please see the attached document for the new combination."
@@ -48,6 +60,7 @@ Because the dial points at 0 a total of three times during this process, the pas
 
 Analyze the rotations in your attached document. What's the actual password to open the door?
 
+Your puzzle answer was 1026.
 --- Part Two ---
 
 You're sure that's the right password, but the door won't open. You knock, but nobody answers. You build a snowman while you think.
@@ -77,6 +90,8 @@ In this example, the dial points at 0 three times at the end of a rotation, plus
 Be careful: if the dial were pointing at 50, a single rotation like R1000 would cause the dial to point at 0 ten times before returning back to 50!
 
 Using password method 0x434C49434B, what is the password to open the door?
+
+Your puzzle answer was 5923.
 
 */
 

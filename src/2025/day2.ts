@@ -37,6 +37,7 @@ Adding up all the invalid IDs in this example produces 1227775554.
 
 What do you get if you add up all of the invalid IDs?
 
+Your puzzle answer was 24747430309.
 --- Part Two ---
 
 The clerk quickly discovers that there are still invalid IDs in the ranges in your list. Maybe the young Elf was doing other silly patterns as well?
@@ -61,6 +62,8 @@ Adding up all the invalid IDs in this example produces 4174379265.
 
 What do you get if you add up all of the invalid IDs using these new rules?
 
+Your puzzle answer was 30962646823.
+
 
 */
 
@@ -84,14 +87,40 @@ function addInvalidIdsPart1(lines: Line[]) {
         for (let i = line.start; i <= line.end; i++) {
             let numString = i.toString();
             let length = numString.length;
-            if (numString.length % 2 === 1) {
+            if (length % 2 === 1) {
                 continue;
             }
             const firstHalf = numString.substring(0, (length / 2));
             const secondHalf = numString.substring((length / 2));
-            // console.log({line, numString, firstHalf, secondHalf});
             if (firstHalf === secondHalf) {
                 sum += i;
+            }
+        }
+    }
+    return sum;
+}
+
+
+function addInvalidIdsPart2(lines: Line[]) {
+    let sum = 0;
+    for (let line of lines) {
+        for (let i = line.start; i <= line.end; i++) {
+            let numString = i.toString();
+            let length = numString.length;
+            for (let j = 1; j <= length / 2; j++) {
+                if (length % j !== 0) {
+                    continue;
+                }
+
+                const parts: string[] = [];
+                for(let batchIndex = 0; batchIndex < length; batchIndex += j) {
+                    parts.push(numString.substring(batchIndex, batchIndex + j));
+                }
+
+                if (parts.every(p => p === parts[0])) {
+                    sum += i;
+                    break;
+                }
             }
         }
     }
@@ -105,7 +134,7 @@ execExamplePart1(() => {
 
 execExamplePart2(() => {
     const {lines} = sharedSetup(SAMPLE_INPUT);
-    return 'TBD';
+    return addInvalidIdsPart2(lines);
 })
 
 execPart1(() => {
@@ -115,6 +144,6 @@ execPart1(() => {
 
 execPart2(() => {
     const {lines} = sharedSetup();
-    return 'TBD';
+    return addInvalidIdsPart2(lines);
 })
 
